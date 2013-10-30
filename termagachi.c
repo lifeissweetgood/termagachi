@@ -242,10 +242,8 @@ int main(int argc, char **argv)
 
         mood = play_game();
     }
-    else
-    {
-        print_termagachi(mood);
-    }
+    
+    print_termagachi(mood);
 
     return 0;
 }
