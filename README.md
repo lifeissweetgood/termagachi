@@ -18,6 +18,7 @@ $ ./termagachi
 
 #####Or to run as a \*NIX command:
 $ cp termagachi /path/to/your/bin/folder/.
+
 $ termagachi
 
 ###Enjoy!
