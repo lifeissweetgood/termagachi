@@ -77,31 +77,34 @@ void print_help()
     printf("\n");
 }
 
-void setup()
+void write_to_file(char *hist_path, int num_commits)
 {
-    int num_commits;
-    char input_path[80];
     FILE *fp = NULL;
-    
+
     if( (fp = fopen(TERMAGACHI_LOCAL_FILE, "w")) == NULL)
     {
         printf("ERROR: %d: fp is null\n", __LINE__);
         exit(1);
     }
 
-    printf("Need path to your history file: ");
-    //if( fgets(input_path, sizeof(input_path), stdin) != NULL )
-    if( EOF != scanf("%s", input_path))
-    {
-        // Save path to history file
-        fprintf(fp, "hist_path=%s\n", input_path);
+    // Save path to history file
+    fprintf(fp, "hist_path=%s\n", hist_path);
 
-        // Save initial number of commits
-        num_commits = check_commits(input_path);
-        fprintf(fp, "commits_total=%d\n", num_commits);
-    }
+    // Save initial number of commits
+    num_commits = check_commits(hist_path);
+    fprintf(fp, "commits_total=%d\n", num_commits);
 
     fclose(fp);
+}
+
+void setup()
+{
+    int num_commits;
+    char input_path[80];
+    
+    printf("Need path to your history file: ");
+    if( EOF != scanf("%s", input_path))
+        write_to_file(input_path, num_commits);
 }
 
 char *get_path_to_hist()
@@ -134,6 +137,39 @@ char *get_path_to_hist()
     }
 
     return hist_path;
+}
+
+int get_saved_num_commits()
+{
+    int i, num_commits;
+    char line[80];
+    char *commits_str = NULL;
+    FILE *fp = NULL;
+
+    if((fp = fopen(TERMAGACHI_LOCAL_FILE, "r")) == NULL )
+    {
+        printf("ERROR: %d: fp is null\n", __LINE__);
+        exit(1);
+    }
+
+    while( fgets(line, sizeof(line), fp) != NULL )
+    {
+        if(strstr(line, "commits_total") != NULL )
+        {
+            asprintf(&commits_str, "%s", &line[14]);
+            for(i = 0; commits_str != NULL; i++)
+            {
+                if(commits_str[i] == '\n')
+                {
+                    commits_str[i] = '\0';
+                    break;
+                }
+            }
+            num_commits = atoi(commits_str);
+        }
+    }
+
+    return num_commits;
 }
 
 int check_commits(const char *hist_path)
@@ -204,6 +240,7 @@ _MOOD play_game()
 
 int main(int argc, char **argv)
 {
+    int num_commits, saved_num_commits;
     char *hist_path = NULL;
     FILE *fp = NULL;
 
@@ -223,12 +260,16 @@ int main(int argc, char **argv)
     if(strcmp("status", argv[1]) == 0)
     {
         hist_path = get_path_to_hist();
-        
-        if(check_commits(hist_path) < 40)
+        num_commits = check_commits(hist_path);
+        saved_num_commits = get_saved_num_commits();
+
+        if(num_commits <= saved_num_commits)
             mood = HUNGRY;
         else
             mood = HAPPY;
-        
+
+        write_to_file(hist_path, num_commits);
+
         free(hist_path);
     }
     else if(strcmp("sayhi", argv[1]) == 0)
