@@ -4,6 +4,7 @@
 #include <string.h>
 #include <unistd.h>
 #include <errno.h>
+#include <time.h>
 
 #define TERMAGACHI_LOCAL_FILE ".dontmindme"
 
@@ -254,6 +255,9 @@ int main(int argc, char **argv)
         print_help();
         exit(1);
     }
+
+    // Seed the randomizer
+    srand(time(NULL));
 
     _MOOD mood = REGULAR;
 
